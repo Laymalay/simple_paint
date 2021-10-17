@@ -1,5 +1,5 @@
 import pytest
-from main import (
+from painter import (
     Canvas,
     CanvasCommand,
     LineCommand,
