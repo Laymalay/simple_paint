@@ -2,7 +2,6 @@
 from abc import ABCMeta, abstractmethod, abstractclassmethod
 import argparse
 from collections import namedtuple
-from time import time
 import re
 
 Point = namedtuple("Point", "x y")
@@ -28,30 +27,6 @@ class Canvas:
             for j in range(self.height)
         ]
         self.brush = brush
-
-    # def _fill_around_rec(self, point: Point, color: str) -> None:
-    #     if (
-    #         point.y != self.height - 1
-    #         and self.grid[point.y + 1][point.x] == self.background
-    #     ):
-    #         self.grid[point.y + 1][point.x] = color
-    #         self._fill_around(Point(point.x, point.y + 1), color)
-    #     if point.y != 0 and self.grid[point.y - 1][point.x] == self.background:
-    #         self.grid[point.y - 1][point.x] = color
-    #         self._fill_around(Point(point.x, point.y - 1), color)
-    #     if (
-    #         point.x != self.width - 1
-    #         and self.grid[point.y][point.x + 1] == self.background
-    #     ):
-    #         self.grid[point.y][point.x + 1] = color
-    #         self._fill_around(Point(point.x + 1, point.y), color)
-    #     if point.x != 0 and self.grid[point.y][point.x - 1] == self.background:
-    #         self.grid[point.y][point.x - 1] = color
-    #         self._fill_around(Point(point.x - 1, point.y), color)
-    # def fill(self, point: Point, color: str) -> None:
-    #     t1 = time()
-    #     self._fill_around(point, color)
-    #     print(f"{time()-t1:.5f}")
 
     def display(self) -> None:
         line = "-" * (self.width + 2) + "\n"
@@ -205,13 +180,10 @@ class FillCommand(Command):
                 if (
                     0 <= neighbour.y < canvas.height
                     and 0 <= neighbour.x < canvas.width
-                    and canvas.grid[neighbour.y][neighbour.x] == canvas.background
+                    and canvas.grid[neighbour.y][neighbour.x]
+                    == canvas.background
                 ):
                     cells.add(neighbour)
-
-
-
-
 
     @classmethod
     def check_command(cls, line):
@@ -226,6 +198,9 @@ class FillCommand(Command):
 
 
 class CommandParser:
+    """
+    Parse strings to commands
+    """
     available_commands = [
         CanvasCommand,
         LineCommand,
@@ -252,6 +227,7 @@ class Invoker:
     """
     Commands executor
     """
+
     def __init__(self, commands: list[Command] = None) -> None:
         self.history: list[list[str]] = []
         self.canvas = None
