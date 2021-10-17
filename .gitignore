@@ -1,4 +1,5 @@
 .vscode/
 *.txt
+!requirements.txt
 venv/
 __pycache__/

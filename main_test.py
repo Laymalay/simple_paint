@@ -18,7 +18,6 @@ def canvas():
     return Canvas(20, 4)
 
 
-
 @pytest.fixture
 def canvas_filled(canvas):
     return Canvas(canvas.width, canvas.height, background="o")
@@ -32,12 +31,12 @@ def draw_rectangle(canvas, start, end):
         row[start.x] = "x"
         row[end.x] = "x"
 
+
 @pytest.fixture
 def canvas_with_line(canvas):
     canvas.grid[2][4:7] = ["x"] * 3
 
     return canvas
-
 
 
 @pytest.fixture
@@ -133,10 +132,10 @@ class TestClassLineCommand:
         assert canvas.grid == canvas_with_line.grid
 
     def test_line_diagonal_command(self, canvas):
-            line = "L 5 3 7 6"
-            parsed_command = LineCommand.parse(line)
-            with pytest.raises(ExecutionError):
-                parsed_command.execute(canvas)
+        line = "L 5 3 7 6"
+        parsed_command = LineCommand.parse(line)
+        with pytest.raises(ExecutionError):
+            parsed_command.execute(canvas)
 
 
 class TestClassRectangleCommand:
