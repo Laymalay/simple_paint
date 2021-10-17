@@ -201,10 +201,14 @@ def test_command_parser():
     commands = CommandParser.parse(data)
 
     assert len(commands) == 4
-    assert isinstance(commands[0], CanvasCommand)
-    assert isinstance(commands[1], LineCommand)
-    assert isinstance(commands[2], RectangleCommand)
-    assert isinstance(commands[3], FillCommand)
+    expected_commands = [
+        CanvasCommand,
+        LineCommand,
+        RectangleCommand,
+        FillCommand,
+    ]
+    for command, ctype in zip(commands, expected_commands):
+        assert isinstance(command, ctype)
 
 
 def test_invoker_execution(commands, canvas_with_rectangle_filled):

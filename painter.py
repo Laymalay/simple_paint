@@ -10,7 +10,7 @@ Point = namedtuple("Point", "x y")
 
 class Canvas:
     """
-    Some docs
+    Provides area to draw in
     """
 
     def __init__(
@@ -141,11 +141,14 @@ class RectangleCommand(Command):
     def execute(self, canvas: Canvas = None) -> None:
         x1, y1 = self.start.x, self.start.y
         x2, y2 = self.end.x, self.end.y
-
-        LineCommand.draw_line(canvas, Point(x1, y1), Point(x1, y2))
-        LineCommand.draw_line(canvas, Point(x1, y1), Point(x2, y1))
-        LineCommand.draw_line(canvas, Point(x1, y2), Point(x2, y2))
-        LineCommand.draw_line(canvas, Point(x2, y1), Point(x2, y2))
+        lines = (
+            (Point(x1, y1), Point(x1, y2)),
+            (Point(x1, y1), Point(x2, y1)),
+            (Point(x1, y2), Point(x2, y2)),
+            (Point(x2, y1), Point(x2, y2)),
+        )
+        for line in lines:
+            LineCommand.draw_line(canvas, *line)
 
     @classmethod
     def check_command(cls, line: str) -> bool:
@@ -247,16 +250,19 @@ class Invoker:
         for command in commands:
             if isinstance(command, CanvasCommand):
                 self.canvas = command.execute()
-            elif self.canvas:
-                command.execute(canvas=self.canvas)
-            else:
+            elif self.canvas is None:
                 print("Cannot draw without canvas")
-                return
+                continue
+            else:
+                command.execute(canvas=self.canvas)
+
             print(self.canvas.display())
             self.history.append(self.canvas.display())
 
 
-def main(input:str, output:str) -> None:
+
+
+def main(input: str, output: str) -> None:
     with open(input, "r") as in_file:
         data = in_file.read()
 
