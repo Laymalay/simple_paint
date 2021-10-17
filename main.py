@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod, abstractclassmethod
 import argparse
 from collections import namedtuple
 import re
+from exceptions import ExecutionError, InvalidCommandArgs
 
 Point = namedtuple("Point", "x y")
 
@@ -21,6 +22,7 @@ class Canvas:
     ) -> None:
         self.width = width
         self.height = height
+
         self.background = background
         self.grid = [
             [self.background for i in range(self.width)]
@@ -106,16 +108,20 @@ class LineCommand(Command):
                 end.x - start.x + 1
             )
         else:
-            print("cant draw diagonal yet")
+            raise ExecutionError("Can't draw diagonal lines yet")
 
     @classmethod
-    def check_command(cls, line):
+    def check_command(cls, line: str) -> bool:
         return cls.template.match(line)
 
     @classmethod
     def parse(cls, line):
         m = cls.template.match(line)
         coords = [int(c) - 1 for c in m.groups()]
+        if coords[2] < coords[0] or coords[3] < coords[1]:
+            raise InvalidCommandArgs(
+                "Invalid LineCommand args: x2 y2 should be >= x1 y1."
+            )
         return cls(*coords)
 
 
@@ -142,14 +148,17 @@ class RectangleCommand(Command):
         LineCommand.draw_line(canvas, Point(x2, y1), Point(x2, y2))
 
     @classmethod
-    def check_command(cls, line):
+    def check_command(cls, line: str) -> bool:
         return cls.template.match(line)
 
     @classmethod
     def parse(cls, line):
         m = cls.template.match(line)
         coords = [int(c) - 1 for c in m.groups()]
-        print(coords)
+        if coords[2] < coords[0] or coords[3] < coords[1]:
+            raise InvalidCommandArgs(
+                "Invalid RectangleCommand args: x2 y2 should be >= x1 y1."
+            )
         return cls(*coords)
 
 
@@ -201,6 +210,7 @@ class CommandParser:
     """
     Parse strings to commands
     """
+
     available_commands = [
         CanvasCommand,
         LineCommand,
@@ -209,11 +219,11 @@ class CommandParser:
     ]
 
     @classmethod
-    def parse(cls, data: str) -> list[Command]:
+    def parse(cls, data: str) -> list:
         """
         Parse raw data to commands objects
         """
-        result: list[Command] = []
+        result = []
 
         for line in data.splitlines():
             for cmd in cls.available_commands:
@@ -228,12 +238,12 @@ class Invoker:
     Commands executor
     """
 
-    def __init__(self, commands: list[Command] = None) -> None:
+    def __init__(self, commands: list = None) -> None:
         self.history: list[list[str]] = []
         self.canvas = None
         self.commands = commands
 
-    def execute_all(self, commands: list[Command] = None) -> None:
+    def execute_all(self, commands: list = None) -> None:
         for command in commands:
             if isinstance(command, CanvasCommand):
                 self.canvas = command.execute()
@@ -246,15 +256,15 @@ class Invoker:
             self.history.append(self.canvas.display())
 
 
-def main(args: list) -> None:
-    with open(args.input, "r") as in_file:
+def main(input:str, output:str) -> None:
+    with open(input, "r") as in_file:
         data = in_file.read()
 
     commands = CommandParser.parse(data)
     invoker = Invoker()
     invoker.execute_all(commands)
 
-    with open(args.output, "w") as out_file:
+    with open(output, "w") as out_file:
         for state in invoker.history:
             out_file.write(state)
 
@@ -276,4 +286,4 @@ if __name__ == "__main__":
         default="output.txt",
     )
     args = parser.parse_args()
-    main(args)
+    main(args.input, args.output)
